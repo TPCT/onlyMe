@@ -1,4 +1,4 @@
-class onlyMe:
+class TPCTPageController:
     def __init__(self, username, password):
         from robobrowser import RoboBrowser
         from requests import Session
@@ -34,31 +34,36 @@ class onlyMe:
         self.Browser.open('https://m.facebook.com/login/save-device/cancel/'
                           '?flow=interstitial_nux&nux_source=regular_login')
         if self.Browser.get_form('mbasic-composer-form'):
+            self.Browser.open('https://m.facebook.com/profile.php')
             return True
         return False
 
-    def makePostOnlyMe(self):
+    def profilePostsIterator(self):
         self.Browser.open('https://m.facebook.com/profile.php')
         seeMore = [span for span in self.Browser.find_all('span') if 'See More Stories' in span.text][0].parent
         composer = self.Browser.find('div', {'id': 'structured_composer_async_container'})
         while seeMore:
             for article in composer.find_all('article'):
-                privacyUrl = article.find('footer')
-                if privacyUrl and 'Privacy' in privacyUrl.text:
-                    if 'Only me' not in privacyUrl.text:
-                        print('changing Post privacy to only me: %s ' %
-                              (eval(article['data-ft'].strip('"'))["mf_story_key"]))
-                        self.Browser.open('https://m.facebook.com' + privacyUrl.find('a')['href'])
-                        seeMorePrivacy = [x for x in self.Browser.find_all('a') if 'see_all' in x['href']][0]
-                        self.Browser.open('https://m.facebook.com' + seeMorePrivacy['href'])
-                        onlyMeUrl = self.Browser.find('a', {'aria-label': 'Only me'})
-                        self.Browser.open('https://m.facebook.com' + onlyMeUrl['href'])
-                    else:
-                        print('Post privacy is only me: %s ' %
-                              (eval(article['data-ft'].strip('"'))["mf_story_key"]))
+                yield article
             self.Browser.open('https://m.facebook.com' + seeMore['href'])
             seeMore = self.Browser.find('div', {'id': 'u_0_0'})
             seeMore = seeMore.find('a') if seeMore else None
             composer = self.Browser.find('div', {'id': 'structured_composer_async_container'})
+        return None
 
+    def makePostOnlyMe(self, post):
+        privacyUrl = post.find('footer')
+        if privacyUrl and 'Privacy' in privacyUrl.text:
+            if 'Only me' not in privacyUrl.text:
+                self.Browser.open('https://m.facebook.com' + privacyUrl.find('a')['href'])
+                seeMorePrivacy = [x for x in self.Browser.find_all('a') if 'see_all' in x['href']][0]
+                self.Browser.open('https://m.facebook.com' + seeMorePrivacy['href'])
+                onlyMeUrl = self.Browser.find('a', {'aria-label': 'Only me'})
+                self.Browser.open('https://m.facebook.com' + onlyMeUrl['href'])
+                return eval(post['data-ft'].strip('"'))["mf_story_key"], True
+            else:
+                return eval(post['data-ft'].strip('"'))["mf_story_key"], False
 
+    def makeAllPostsOnlyMe(self):
+        for post in self.profilePostsIterator():
+            self.makePostOnlyMe(post)
