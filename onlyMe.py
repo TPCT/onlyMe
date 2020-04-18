@@ -66,4 +66,4 @@ class TPCTPageController:
 
     def makeAllPostsOnlyMe(self):
         for post in self.profilePostsIterator():
-            self.makePostOnlyMe(post)
+            yield self.makePostOnlyMe(post)
