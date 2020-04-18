@@ -57,5 +57,8 @@ class onlyMe:
                         print('Post privacy is only me: %s ' %
                               (eval(article['data-ft'].strip('"'))["mf_story_key"]))
             self.Browser.open('https://m.facebook.com' + seeMore['href'])
-            seeMore = self.Browser.find('div', {'id': 'u_0_0'}).find('a')
+            seeMore = self.Browser.find('div', {'id': 'u_0_0'})
+            seeMore = seeMore.find('a') if seeMore else None
             composer = self.Browser.find('div', {'id': 'structured_composer_async_container'})
+
+
