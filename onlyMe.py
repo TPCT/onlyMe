@@ -39,7 +39,7 @@ class onlyMe:
 
     def makePostOnlyMe(self):
         self.Browser.open('https://m.facebook.com/profile.php')
-        seeMore = self.Browser.find('div', {'id': 'u_0_2'})
+        seeMore = [span for span in self.Browser.find_all('span') if 'See More Stories' in span.text][0].parent
         composer = self.Browser.find('div', {'id': 'structured_composer_async_container'})
         while seeMore:
             for article in composer.find_all('article'):
@@ -49,13 +49,13 @@ class onlyMe:
                         print('changing Post privacy to only me: %s ' %
                               (eval(article['data-ft'].strip('"'))["mf_story_key"]))
                         self.Browser.open('https://m.facebook.com' + privacyUrl.find('a')['href'])
-                        seeMore = [x for x in self.Browser.find_all('a') if 'see_all' in x['href']][0]
-                        self.Browser.open('https://m.facebook.com' + seeMore['href'])
+                        seeMorePrivacy = [x for x in self.Browser.find_all('a') if 'see_all' in x['href']][0]
+                        self.Browser.open('https://m.facebook.com' + seeMorePrivacy['href'])
                         onlyMeUrl = self.Browser.find('a', {'aria-label': 'Only me'})
                         self.Browser.open('https://m.facebook.com' + onlyMeUrl['href'])
                     else:
                         print('Post privacy is only me: %s ' %
                               (eval(article['data-ft'].strip('"'))["mf_story_key"]))
-            seeMore = seeMore.find('a')
             self.Browser.open('https://m.facebook.com' + seeMore['href'])
-            seeMore = self.Browser.find('div', {'id': 'u_0_0'})
+            seeMore = self.Browser.find('div', {'id': 'u_0_0'}).find('a')
+            composer = self.Browser.find('div', {'id': 'structured_composer_async_container'})
